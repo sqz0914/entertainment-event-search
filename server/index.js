@@ -4,10 +4,10 @@ const cors = require('cors');
 const geohash = require('ngeohash');
 const SpotifyWebApi = require('spotify-web-api-node');
 
-const GOOGLE_API_KEY = 'AIzaSyAnP-SlJiSeSjGs0E5-2PDvtcxQuk2l58c';
-const TICKETMASTER_API_KEY = 'O6Tq4nJGTfCApMbJ96GXpcd0FLpyg82G';
-const CLIENT_ID = '9474d2fa1a614d75a0b12534380a9b03';
-const CLIENT_SECRET = 'ed4e21420c404dbab50fe679fbec2f15';
+const GOOGLE_API_KEY = YOUR_GOOGLE_API_KEY;
+const TICKETMASTER_API_KEY = YOUR_TICKETMASTER_API_KEY;
+const CLIENT_ID = YOUR_CLIENT_ID;
+const CLIENT_SECRET = YOUR_CLIENT_SECRET_ID;
 
 const app = express();
 const PORT = 8080;
