@@ -1,0 +1,169 @@
+.search-part {
+    margin-top: 1em;
+    border-radius: 0.5em;
+    border-style: solid;
+    border-color:lightgray;
+    border-width: 0.1em;
+    background-color: rgb(247, 247, 247);
+}
+
+.search-form {
+    padding-left: 5em;
+    padding-right: 2em;
+    padding-bottom: 1em;
+}
+
+h1 {
+    text-align: center;
+    font-size: 18px;
+    padding-top: 1em;
+    margin-bottom: 0.5em;
+}
+
+.star {
+    color: red;
+}
+
+.red-border {
+    border-color: red;
+}
+
+.custom-btn-ctr {
+    min-width: 6em;
+    max-width: 6em;
+    margin: 0.5em 0em 0.5em 0em;
+    border-style: solid;
+    border-color: lightgray;
+}
+
+.search-results {
+    margin-top: 1em;
+    margin-bottom: 2em;
+}
+
+.gray-text {
+    color: rgb(194, 189, 189);
+}
+
+.progress-bar-custom {
+    margin-top: 3em;
+    margin-bottom: 3em;
+}
+
+.tab-content-custom {
+    margin-top: 1em;
+}
+
+.detail-btn {
+    margin-bottom: 0.5em;
+}
+
+.click-event-name {
+    color: rgb(74, 126, 236);
+    text-decoration: underline;
+}
+
+.click-event-name:hover{
+    cursor: pointer;
+}
+
+.event-star-btn {
+    background-color: white;
+}
+
+h2 {
+    text-align: center;
+    font-size: 20px;
+    padding-top: 1em;
+    margin-bottom: 0.5em;
+}
+
+.list-btn {
+    border-style: solid;
+    border-color: lightgray;
+    background-color: white;
+}
+
+.twitter {
+    width: 43px;
+    height: 43px;
+}
+
+.twitter-btn {
+    background-color: white;
+    border-color: white;
+}
+
+.star-btn {
+    border-style: solid;
+    border-color: lightgray;
+    background-color: white;
+    margin-left: 0.4em;
+}
+
+.event-detail-btns {
+    margin-bottom: 2em;
+}
+
+.event-table {
+    margin-top: 1em;
+}
+
+.venue-table {
+    margin-top: 1em;
+}
+
+h3 {
+    text-align: center;
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
+    font-size: 16px;
+    font-weight: normal;
+}
+
+.seat-map-img {
+    max-width:100%;
+    max-height:100%;
+}
+
+.close-btn {
+    background-color: white;
+    border-color: black;
+    color: black;
+}
+.popularity-cell {
+    display: flex;
+}
+
+.popularity-number {
+    margin-top: 0.8em;
+    margin-left: -2em;
+}
+
+.yellow-star {
+    color: orange;
+}
+
+.table-auto-number {
+    counter-reset: row-num -1;
+}
+
+.table-auto-number tr {
+    counter-increment: row-num;
+}
+
+.table-auto-number tr td:first-child::before {
+    content: counter(row-num);
+}
+
+.alert-danger-custom {
+    margin-top: 2em;
+}
+
+.alert-warning-custom {
+    margin-top: 2em;
+}
+
+.event-detail-tabs {
+    margin-bottom: 3em;
+}

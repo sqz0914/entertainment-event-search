@@ -1,0 +1,340 @@
+<div class="container">
+    <div class="search-part">
+        <h1>Entertainment Event Ticket Search</h1>
+        <form class="search-form" [formGroup]="searchForm" (ngSubmit)="onSubmit()" novalidate>
+            <div class="form-group row">
+                <label for="keyword" class="col-sm-2 col-form-label">Keyword<span class="star">*</span></label>
+                <div class="col-sm-8">
+                    <input type="text" class="form-control" [ngClass]="{'red-border': emptyKeyword || invalidKeyword }" id="keyword" formControlName="keyword" placeholder="Enter Artist, Team or Event Name (eg. Lakers)" required>
+                    <div *ngIf="emptyKeyword" class="form-control alert alert-danger">
+                        Please enter a keyword
+                    </div>
+                    <div *ngIf="invalidKeyword" class="form-control alert alert-danger">
+                        Please enter a valid keyword
+                    </div>
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="category" class="col-sm-2 col-form-label">Category</label>
+                <div class="col-sm-4">
+                    <select class="custom-select mr-sm-2" id="category" formControlName="category">
+                        <option *ngFor="let c of categories" [ngValue]="c">{{ c }}</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="distance" class="col-sm-2 col-form-label">Distance</label>
+                <div class="col-sm-4">
+                    <input type="text" class="form-control" id="distance" formControlName="distance" placeholder="10">
+                </div>
+                <div class="col-sm-4">
+                    <select class="custom-select mr-sm-2" id="unit" formControlName="unit">
+                        <option *ngFor="let u of units" [ngValue]="u">{{ u }}</option>
+                    </select>
+                </div>
+            </div>
+            <fieldset class="form-group">
+                <div class="row">
+                    <legend class="col-form-label col-sm-2 pt-0">From<span class="star">*</span></legend>
+                    <div class="col-sm-8">
+                        <div class="form-check">
+                          <input class="form-check-input" type="radio" name="location" id="location" value="here" formControlName="location" (click)="disableLocationInput()">
+                          <label class="form-check-label" for="here">
+                            Current Location
+                          </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="location" id="location" value="other" formControlName="location" (click)="enableLocationInput()">
+                            <label class="form-check-label" for="location">
+                              Other. Please specify:
+                            </label>
+                            <input type="text" class="form-control" [ngClass]="{'red-border': emptyInputLocation }" id="inputLocation" formControlName="inputLocation">
+                            <div *ngIf="emptyInputLocation" class="form-control alert alert-danger">
+                                Please enter a location
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </fieldset>
+            <div class="form-group row">
+                <div class="col-sm-3">
+                    <button type="submit" class="btn btn-primary form-control custom-btn-ctr" [disabled]='!fetchUserLocation'><span class="material-icons align-middle">search</span><span class="align-middle">Search</span></button>
+                </div>
+                <div class="col-sm-3">
+                    <button type="button" class="btn btn-light form-control custom-btn-ctr" (click)="clearWindow()"><span class="material-icons align-middle">clear_all</span><span class="align-middle">Clear</span></button>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="search-results">
+        <ul class="nav nav-pills mb-3 justify-content-center" id="pills-tab" role="tablist">
+            <li class="nav-item">
+              <a class="nav-link active" id="pills-results-tab" data-toggle="pill" href="#pills-results" role="tab" aria-controls="pills-results" aria-selected="true" (click)="showResultTab()">Results</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" id="pills-favorites-tab" data-toggle="pill" href="#pills-favorites" role="tab" aria-controls="pills-favorites" aria-selected="false" (click)="showFavoriteTab()">Favorites</a>
+            </li>
+        </ul>
+        <div id="progressBar" class="progress progress-bar-custom">
+            <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100" style="width: 50%"></div>
+        </div>
+        <div class="tab-content tab-content-custom" id="pills-tabContent">
+            <div id="resultsTabContent" class="tab-pane fade show active" id="pills-results" role="tabpanel" aria-labelledby="pills-results-tab">
+                <div id="eventsSearchContent">
+                    <div *ngIf="!noEventsRecord && !eventsSearchError">
+                        <div>
+                            <button class="btn btn-light float-right detail-btn" [ngClass]="{'gray-text': disableDetailButton}" [disabled]="disableDetailButton" (click)="showEventDetails()">Details ></button>
+                        </div>
+                        <table class="table table-auto-number">
+                            <thead>
+                              <tr>
+                                <th scope="col">#</th>
+                                <th scope="col">Date</th>
+                                <th scope="col">Event</th>
+                                <th scope="col">Category</th>
+                                <th scope="col">Venue Info</th>
+                                <th scope="col">Favorite</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr *ngFor="let event of events">
+                                <td></td>
+                                <td style="width: 15%">{{event.date}}</td>
+                                <td style="width: 30%" class="click-event-name"><a #event title="{{event.name}}" (click)="searchEventDetail(event)">{{event.name | slice:0:35 }}{{event.name.length > 35?'...' : ''}}</a></td>
+                                <td>{{event.category}}</td>
+                                <td>{{event.venue}}</td>
+                                <td #event>
+                                    <button *ngIf="!event.favorite" type="button" class="btn btn-light event-star-btn" (click)="saveFavoriteEvent(event)"><span class="material-icons">star_border</span></button>
+                                    <button *ngIf="event.favorite" type="button" class="btn btn-light event-star-btn yellow-star" (click)="saveFavoriteEvent(event)"><span class="material-icons">star</span></button>
+                                </td>
+                              </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div *ngIf="eventsSearchError">
+                        <div class="alert alert-danger alert-danger-custom" role="alert">
+                            Failed to get search results.
+                        </div>
+                    </div>
+                    <div *ngIf="noEventsRecord && !eventsSearchError">
+                        <div class="alert alert-warning alert-warning-custom" role="alert">
+                            No records.
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="tab-pane fade" id="pills-favorites" role="tabpanel" aria-labelledby="pills-favorites-tab">
+                <div id="favoriteEventsContent">
+                    <div *ngIf="favoriteEvents.length > 0">
+                        <div>
+                            <button class="btn btn-light float-right detail-btn" [ngClass]="{'gray-text': disableDetailButton}" [disabled]="disableDetailButton" (click)="showEventDetails()">Details ></button>
+                        </div>
+                        <table class="table table-auto-number">
+                            <thead>
+                              <tr>
+                                <th scope="col">#</th>
+                                <th scope="col">Date</th>
+                                <th scope="col">Event</th>
+                                <th scope="col">Category</th>
+                                <th scope="col">Venue Info</th>
+                                <th scope="col">Favorite</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr *ngFor="let fvEvent of favoriteEvents">
+                                <td></td>
+                                <td style="width: 15%">{{fvEvent.date}}</td>
+                                <td style="width: 30%" class="click-event-name"><a #fvEvent title="{{fvEvent.name}}" (click)="searchEventDetail(fvEvent)">{{fvEvent.name | slice:0:35 }}{{fvEvent.name.length > 35?'...' : ''}}</a></td>
+                                <td>{{fvEvent.category}}</td>
+                                <td>{{fvEvent.venue}}</td>
+                                <td #fvEvent>
+                                    <button *ngIf="fvEvent.favorite" type="button" class="btn btn-light event-star-btn" (click)="deleteFavoriteEvent(fvEvent)"><span class="material-icons">delete</span></button>
+                                </td>
+                              </tr>
+                            </tbody>
+                          </table>
+                    </div>
+                    <div *ngIf="favoriteEvents.length == 0">
+                        <div class="alert alert-warning aleart-warning-custom" role="alert">
+                            No records.
+                        </div>
+                    </div>
+                </div>               
+            </div>
+        </div>
+        <div id="eventDetailsContent" class="event-detail-tabs">
+            <h2>{{eventDetail.name}}</h2>
+            <div class="event-detail-btns">
+                <button class="btn btn-light list-btn" (click)="showSearchResultsAndFavorite()">< List</button>
+                <div class="float-right">
+                    <button class="btn btn-light twitter-btn"><a href="https://twitter.com/intent/tweet?text=Check%20out%20{{eventDetail.name}}%20located%20at%20{{eventDetail.venue}}%2E%20%23CSCI571EventSearch" target="_blank"><img class="twitter" src="https://csci571.com/hw/hw8/images/Twitter.png" alt="Twitter"></a></button>
+                    <button *ngIf="!eventDetail.favorite" class="btn btn-light star-btn" [disabled]="disableStarButton" (click)="saveFavoriteEvent(eventDetail)"><span class="material-icons">star_border</span></button>
+                    <button *ngIf="eventDetail.favorite" class="btn btn-light star-btn" [disabled]="disableStarButton" (click)="saveFavoriteEvent(eventDetail)"><span class="material-icons yellow-star">star</span></button>
+                </div>
+            </div>
+            <div>
+                <nav>
+                    <div class="nav nav-tabs justify-content-end" id="nav-tab" role="tablist">
+                      <a class="nav-item nav-link active" id="nav-event-tab" data-toggle="tab" href="#nav-event" role="tab" aria-controls="nav-event" aria-selected="true">Event</a>
+                      <a class="nav-item nav-link" id="nav-artistteam-tab" data-toggle="tab" href="#nav-artistteam" role="tab" aria-controls="nav-artistteam" aria-selected="false">Artist/Teams</a>
+                      <a class="nav-item nav-link" id="nav-venue-tab" data-toggle="tab" href="#nav-venue" role="tab" aria-controls="nav-venue" aria-selected="false">Venue</a>
+                    </div>
+                </nav>
+                <div class="tab-content" id="nav-tabContent">
+                    <div class="tab-pane fade show active" id="nav-event" role="tabpanel" aria-labelledby="nav-event-tab">
+                        <div *ngIf="!isEmptyObj(eventDetail)">
+                            <table class="table table-striped event-table">
+                                <tbody>
+                                    <tr>
+                                        <th style="width: 40%" *ngIf="eventDetail.hasOwnProperty('artistTeam')" scope="row">Artist/Team(s)</th>
+                                        <td style="width: 60%" *ngIf="eventDetail.hasOwnProperty('artistTeam')">{{eventDetail.artistTeam}}</td>
+                                    </tr>
+                                    <tr>
+                                        <th style="width: 40%" *ngIf="eventDetail.hasOwnProperty('venue')" scope="row">Venue</th>
+                                        <td style="width: 60%" *ngIf="eventDetail.hasOwnProperty('venue')">{{eventDetail.venue}}</td>
+                                    </tr>
+                                    <tr>
+                                        <th style="width: 40%" *ngIf="eventDetail.hasOwnProperty('date')" scope="row">Time</th>
+                                        <td style="width: 60%" *ngIf="eventDetail.hasOwnProperty('date')">{{eventDetail.date | date }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th style="width: 40%" *ngIf="eventDetail.hasOwnProperty('category')" scope="row">Category</th>
+                                        <td style="width: 60%" *ngIf="eventDetail.hasOwnProperty('category')">{{eventDetail.category}}</td>
+                                    </tr>
+                                    <tr>
+                                        <th style="width: 40%" *ngIf="eventDetail.hasOwnProperty('priceRanges')" scope="row">Price Range</th>
+                                        <td style="width: 60%" *ngIf="eventDetail.hasOwnProperty('priceRanges')">{{eventDetail.priceRanges}} USD</td>
+                                    </tr>
+                                    <tr>
+                                        <th style="width: 40%" *ngIf="eventDetail.hasOwnProperty('status')" scope="row">Ticket Status</th>
+                                        <td style="width: 60%" *ngIf="eventDetail.hasOwnProperty('status')">{{eventDetail.status}}</td>
+                                    </tr>
+                                    <tr>
+                                        <th style="width: 40%" *ngIf="eventDetail.hasOwnProperty('buyTicket')" scope="row">Buy Ticket At</th>
+                                        <td style="width: 60%" *ngIf="eventDetail.hasOwnProperty('buyTicket')"><a href="{{eventDetail.buyTicket}}" target="_blank">Ticketmaster</a></td>
+                                    </tr>
+                                    <tr>
+                                        <th style="width: 40%" *ngIf="eventDetail.hasOwnProperty('seatMap')" scope="row">Seat Map</th>
+                                        <td style="width: 60%" *ngIf="eventDetail.hasOwnProperty('seatMap')"><a data-toggle="modal" href="#seatMapModal">View Seat Map Here</a></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <div class="modal fade" id="seatMapModal" tabindex="-1" role="dialog" aria-labelledby="seatMapModalLabel" aria-hidden="true">
+                                <div class="modal-dialog" role="document">
+                                  <div class="modal-content">
+                                    <div class="modal-header">
+                                      <h5 class="modal-title" id="seatMapModalLabel">View Seat Map</h5>
+                                      <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                      </button>
+                                    </div>
+                                    <div class="modal-body">
+                                      <img class="seat-map-img" src="{{eventDetail.seatMap}}" alt="SeatMap">
+                                    </div>
+                                    <div class="modal-footer">
+                                      <button type="button" class="btn btn-light close-btn" data-dismiss="modal">Close</button>
+                                    </div>
+                                  </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div *ngIf="isEmptyObj(eventDetail) && !eventDetailSearchError">
+                            <h3>No details available</h3>
+                        </div>
+                        <div *ngIf="eventDetailSearchError">
+                            <div class="alert alert-danger alert-danger-custom" role="alert">
+                                Failed to get search results.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tab-pane fade" id="nav-artistteam" role="tabpanel" aria-labelledby="nav-artistteam-tab">
+                        <div *ngIf="eventDetail.hasOwnProperty('artistTeam')">
+                            <div *ngFor="let artist of artistDetail">
+                                <div *ngIf="!isEmptyObj(artist.info)">
+                                    <h2>{{artist.name}}</h2>
+                                    <table class="table">
+                                        <tbody>
+                                        <tr>
+                                            <th style="width: 40%" *ngIf="artist.info.hasOwnProperty('name')" scope="row">Name</th>
+                                            <td style="width: 60%" *ngIf="artist.info.hasOwnProperty('name')">{{artist.info.name}}</td>
+                                        </tr>
+                                        <tr>
+                                            <th style="width: 40%" *ngIf="artist.info.hasOwnProperty('followers')" scope="row">Followers</th>
+                                            <td style="width: 60%" *ngIf="artist.info.hasOwnProperty('followers')">{{artist.info.followers}}</td>
+                                        </tr>
+                                        <tr>
+                                            <th style="width: 40%" *ngIf="artist.info.hasOwnProperty('popularity')" scope="row">Popularity</th>
+                                            <td #artist.info style="width: 60%" *ngIf="artist.info.hasOwnProperty('popularity')" class="popularity-cell"><round-progress class="popularity-circle" [current]="artist.info.popularity" [max]="100" [stroke]="5" [radius]="25" [color]="'#46CE56'"></round-progress><span class="popularity-number">{{artist.info.popularity}}</span></td>
+                                        </tr>
+                                        <tr>
+                                            <th style="width: 40%" *ngIf="artist.info.hasOwnProperty('name')" scope="row">Check At</th>
+                                            <td style="width: 60%" *ngIf="artist.info.hasOwnProperty('name')"><a href="{{artist.info.checkAt}}" target="_blank">Spotify</a></td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div *ngIf="isEmptyObj(artist.info) && !artistSearchError">
+                                    <h2>{{artist.name}}</h2>
+                                    <h3>No details available</h3>
+                                </div>
+                                <div *ngIf="artistSearchError">
+                                    <div class="alert alert-danger alert-danger-custom" role="alert">
+                                        Failed to get search results.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>                               
+                        <div *ngIf="!eventDetail.hasOwnProperty('artistTeam')">
+                            <h3>No details available</h3>
+                        </div>                                
+                    </div>
+                    <div class="tab-pane fade" id="nav-venue" role="tabpanel" aria-labelledby="nav-venue-tab">
+                        <div *ngIf="!isEmptyObj(venueDetail)">
+                            <table class="table venue-table">
+                                <tbody>
+                                  <tr>
+                                    <th style="width: 15%" *ngIf="venueDetail.hasOwnProperty('address')" scope="row">Address</th>
+                                    <td style="width: 85%" *ngIf="venueDetail.hasOwnProperty('address')">{{venueDetail.address}}</td>
+                                  </tr>
+                                  <tr>
+                                    <th style="width: 15%" *ngIf="venueDetail.hasOwnProperty('city')" scope="row">City</th>
+                                    <td style="width: 85%" *ngIf="venueDetail.hasOwnProperty('city')">{{venueDetail.city}}</td>
+                                  </tr>
+                                  <tr>
+                                    <th style="width: 15%" *ngIf="venueDetail.hasOwnProperty('phoneNumber')" scope="row">Phone Number</th>
+                                    <td style="width: 85%" *ngIf="venueDetail.hasOwnProperty('phoneNumber')">{{venueDetail.phoneNumber}}</td>
+                                  </tr>
+                                  <tr>
+                                    <th style="width: 15%" *ngIf="venueDetail.hasOwnProperty('openHours')" scope="row">Open Hours</th>
+                                    <td style="width: 85%" *ngIf="venueDetail.hasOwnProperty('openHours')">{{venueDetail.openHours}}</td>
+                                  </tr>
+                                  <tr>
+                                    <th style="width: 15%" *ngIf="venueDetail.hasOwnProperty('generalRule')" scope="row">General Rule</th>
+                                    <td style="width: 85%" *ngIf="venueDetail.hasOwnProperty('generalRule')">{{venueDetail.generalRule}}</td>
+                                  </tr>
+                                  <tr>
+                                    <th style="width: 15%" *ngIf="venueDetail.hasOwnProperty('childRule')" scope="row">Child Rule</th>
+                                    <td style="width: 85%" *ngIf="venueDetail.hasOwnProperty('childRule')">{{venueDetail.childRule}}</td>
+                                  </tr>
+                                </tbody>
+                            </table>
+                            <div *ngIf="venueDetail.hasOwnProperty('lat') && venueDetail.hasOwnProperty('lng')">
+                                <google-map height="400px" width="100%" [zoom]="zoom" [center]="center" [options]="options">
+                                   <map-marker [position]="marker.position" [label]="marker.label"></map-marker>
+                                </google-map>
+                            </div>
+                        </div>
+                        <div *ngIf="isEmptyObj(venueDetail) && !venueSearchError">
+                            <h3>No details available</h3>
+                        </div>
+                        <div *ngIf="venueSearchError">
+                            <div class="alert alert-danger alert-danger-custom" role="alert">
+                                Failed to get search results.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>               
+    </div>
+</div>
